@@ -5,7 +5,7 @@ import java.util.Scanner;
 import java.util.HashMap;
 import java.util.Map;
 
-enum Prize {// Prize Types
+enum PrizeType {// Prize Types
 	Nothing, // 白给
 	YiXiu, // 一秀 一个四
 	ErJu, // 二举 两个四
@@ -90,7 +90,7 @@ class Mooncake_Gambling {
 			System.out.print(Integer.toString(dice[i]) + (i == 5 ? "\n" : " "));
 	}
 
-	Prize judge_points() {
+	PrizeType judge_points() {
 		int repeat[] = new int[6];
 		for (int i = 0; i < 6; i++)
 			repeat[dice[i] - 1]++;
@@ -98,52 +98,52 @@ class Mooncake_Gambling {
 		for (int i = 0; i < 6; i++)
 			max_repeat_times = Math.max(max_repeat_times, repeat[i]);
 		if (max_repeat_times == 1) {
-			return Prize.DuiTang;
+			return PrizeType.DuiTang;
 		} else if (max_repeat_times == 2 || max_repeat_times == 3) {
 			if (repeat[3] == 0)
-				return Prize.Nothing;
+				return PrizeType.Nothing;
 			else if (repeat[3] == 1)
-				return Prize.YiXiu;
+				return PrizeType.YiXiu;
 			else if (repeat[3] == 2)
-				return Prize.ErJu;
+				return PrizeType.ErJu;
 			else if (repeat[3] == 3)
-				return Prize.SanHong;
+				return PrizeType.SanHong;
 		} else if (max_repeat_times == 4) {
 			if (repeat[3] == 4) {
 				if (repeat[0] == 2)
-					return Prize.ChaJinHua;
+					return PrizeType.ChaJinHua;
 				else
-					return Prize.SiHong;
+					return PrizeType.SiHong;
 			} else {
 				if (repeat[3] == 1)
-					return Prize.SiJinPlusYiXiu;
+					return PrizeType.SiJinPlusYiXiu;
 				else if (repeat[3] == 2)
-					return Prize.SiJinPlusErJu;
+					return PrizeType.SiJinPlusErJu;
 				else
-					return Prize.SiJin;
+					return PrizeType.SiJin;
 			}
 		} else if (max_repeat_times == 5) {
 			if (repeat[3] == 5)
-				return Prize.WuHong;
+				return PrizeType.WuHong;
 			else {
 				if (repeat[3] == 1)
-					return Prize.WuZiPlusYiXiu;
+					return PrizeType.WuZiPlusYiXiu;
 				else
-					return Prize.WuZiDengKe;
+					return PrizeType.WuZiDengKe;
 			}
 		} else if (max_repeat_times == 6) {
 			if (repeat[0] == 6)
-				return Prize.BianDiJin;
+				return PrizeType.BianDiJin;
 			else if (repeat[3] == 6)
-				return Prize.LiuBeiHong;
+				return PrizeType.LiuBeiHong;
 			else
-				return Prize.LiuBeiHei;
+				return PrizeType.LiuBeiHei;
 		}
 		return null;
 	}
 
-	void print_result(Prize result) {
-		if (result == Prize.Nothing)
+	void print_result(PrizeType result) {
+		if (result == PrizeType.Nothing)
 			System.out.println("You got Nothing! Wish you good luck next time!");
 		else
 			System.out.println("Congratulations! You got a(n) " + result);
@@ -153,9 +153,10 @@ class Mooncake_Gambling {
 class Player {
 //	private Map<Prize, Integer> WonPrize = new HashMap<Prize, Integer>();
 //	private Map<Prize, Integer> OverFlowPrize = new HashMap<Prize, Integer>();
-	private int WonPrize[] = new int[Prize.values().length];
+	private int WonPrize[] = new int[PrizeType.values().length];
 	private int WonPrizeClassified2[] = new int[PrizeClassified2.values().length];
-	private int OverFlowPrize[] = new int[Prize.values().length];
+	private int OverFlowPrize[] = new int[PrizeType.values().length];
+	private Prize ZhuangYuan;
 
 	void WonPrize(Prize prize) {
 
@@ -166,9 +167,116 @@ class Player {
 	}
 }
 
-class Gaming {
-	private int PlayerNum;
+class Prize {
+	private int dice_repeat[] = new int[6];// save repeat counts for each point(1~6)
+	private int max_repeat_time = 0;// the max repeat time for each num
+	private int max_repeat_num = 0;// the first num that repeats most
+	private int pointsum = 0;
+	private PrizeType prize_type = null;
 
+	private static Map<PrizeType, Integer> ZhuangYuanWeight = new HashMap<PrizeType, Integer>();
+	static {
+		ZhuangYuanWeight.put(PrizeType.SiHong, 0);
+		ZhuangYuanWeight.put(PrizeType.WuZiDengKe, 1);
+		ZhuangYuanWeight.put(PrizeType.WuZiPlusYiXiu, 1);
+		ZhuangYuanWeight.put(PrizeType.WuHong, 2);
+		ZhuangYuanWeight.put(PrizeType.LiuBeiHei, 3);
+		ZhuangYuanWeight.put(PrizeType.BianDiJin, 4);
+		ZhuangYuanWeight.put(PrizeType.LiuBeiHong, 5);
+		ZhuangYuanWeight.put(PrizeType.ChaJinHua, 6);
+	}
+
+	Prize(int dice[]) {
+		for (int i = 0; i < 6; i++) {
+			this.dice_repeat[dice[i] - 1]++;
+			this.pointsum += dice[i];
+		}
+		for (int i = 0; i < 6; i++) {
+			if (this.dice_repeat[i] > this.max_repeat_time) {
+				this.max_repeat_time = this.dice_repeat[i];
+				this.max_repeat_num = i + 1;
+			}
+		}
+		// prize judge
+		if (max_repeat_time == 1) {// all appear once
+			this.prize_type = PrizeType.DuiTang;
+		} else if (max_repeat_time == 2 || max_repeat_time == 3) {// point 4 repeat 2 or 3 times
+			if (dice_repeat[3] == 0)
+				this.prize_type = PrizeType.Nothing;
+			else if (dice_repeat[3] == 1)
+				this.prize_type = PrizeType.YiXiu;
+			else if (dice_repeat[3] == 2)
+				this.prize_type = PrizeType.ErJu;
+			else if (dice_repeat[3] == 3)
+				this.prize_type = PrizeType.SanHong;
+		} else if (max_repeat_time == 4) {// something repeat 4 times
+			if (dice_repeat[3] == 4) {
+				if (dice_repeat[0] == 2)
+					this.prize_type = PrizeType.ChaJinHua;
+				else
+					this.prize_type = PrizeType.SiHong;
+			} else {// SiJin Plus sth or nothing
+				if (dice_repeat[3] == 1)
+					this.prize_type = PrizeType.SiJinPlusYiXiu;
+				else if (dice_repeat[3] == 2)
+					this.prize_type = PrizeType.SiJinPlusErJu;
+				else
+					this.prize_type = PrizeType.SiJin;
+			}
+		} else if (max_repeat_time == 5) {// sth repeat 5 times
+			if (dice_repeat[3] == 5)
+				this.prize_type = PrizeType.WuHong;
+			else {// Wuzi Plus sth or nothing
+				if (dice_repeat[3] == 1)
+					this.prize_type = PrizeType.WuZiPlusYiXiu;
+				else
+					this.prize_type = PrizeType.WuZiDengKe;
+			}
+		} else if (max_repeat_time == 6) {// sth repeat 6 times
+			if (dice_repeat[0] == 6)
+				this.prize_type = PrizeType.BianDiJin;
+			else if (dice_repeat[3] == 6)
+				this.prize_type = PrizeType.LiuBeiHong;
+			else
+				this.prize_type = PrizeType.LiuBeiHei;
+		}
+	}
+
+	public boolean ZhuangYuan_isGreaterThan(Prize cmp) {// Compare between ZhuangYuan
+		if (ZhuangYuanWeight.get(this.prize_type) > ZhuangYuanWeight.get(cmp.prize_type))
+			return true;
+		else if (ZhuangYuanWeight.get(this.prize_type) < ZhuangYuanWeight.get(cmp.prize_type))
+			return false;
+		else {
+			if (this.prize_type == PrizeType.SiHong || this.prize_type == PrizeType.WuHong
+					|| this.prize_type == PrizeType.LiuBeiHei)// Only need to CMP SUM
+				return this.pointsum >= cmp.pointsum;// Self is Greater when equal
+			else if (this.prize_type == PrizeType.BianDiJin || this.prize_type == PrizeType.LiuBeiHong
+					|| this.prize_type == PrizeType.ChaJinHua)
+				return true;// Self is Greater when equal
+			else {// CMP between WuZi
+				int this_appear_once = 0, this_appear_fifth = 0, cmp_appear_once = 0, cmp_appear_fifth = 0;
+				for (int i = 0; i < 6; i++) {
+					if (this.dice_repeat[i] == 1)
+						this_appear_once = i;
+					else if (this.dice_repeat[i] == 5)
+						this_appear_once = i;
+					if (cmp.dice_repeat[i] == 1)
+						cmp_appear_once = i;
+					else if (cmp.dice_repeat[i] == 5)
+						cmp_appear_once = i;
+				}
+				if (this_appear_once != cmp_appear_once)
+					return this_appear_fifth >= cmp_appear_fifth;
+				else
+					return this_appear_once > cmp_appear_once;
+			}
+		}
+	}
+}
+
+class Gaming {
+	private Player players[];
 	// Prize Num Set
 	private final int ZhuangYuanNumSet = 1;
 	private final int DuiTangNumSet = 2;
@@ -185,49 +293,49 @@ class Gaming {
 	private int ErJuNumCount = 0;
 	private int YiXiuNumCount = 0;
 
-	private static Map<Prize, String> PrizeToChinese = new HashMap<Prize, String>();
-	private static Map<Prize, PrizeClassified> PrizeClassify = new HashMap<Prize, PrizeClassified>();
-	private static Map<Prize, Integer> ZhuangYuanWeight = new HashMap<Prize, Integer>();
+	private static Map<PrizeType, String> PrizeToChinese = new HashMap<PrizeType, String>();
+	private static Map<PrizeType, PrizeClassified> PrizeClassify = new HashMap<PrizeType, PrizeClassified>();
 	static {// 初始化map
-		PrizeToChinese.put(Prize.Nothing, "无");
-		PrizeToChinese.put(Prize.YiXiu, "一秀");
-		PrizeToChinese.put(Prize.ErJu, "二举");
-		PrizeToChinese.put(Prize.SiJin, "四进");
-		PrizeToChinese.put(Prize.SanHong, "三红");
-		PrizeToChinese.put(Prize.DuiTang, "对堂");
-		PrizeToChinese.put(Prize.SiHong, "四红");
-		PrizeToChinese.put(Prize.WuZiDengKe, "五子登科");
-		PrizeToChinese.put(Prize.WuHong, "五红");
-		PrizeToChinese.put(Prize.LiuBeiHei, "六杯黑");
-		PrizeToChinese.put(Prize.BianDiJin, "遍地锦");
-		PrizeToChinese.put(Prize.LiuBeiHong, "六杯红");
-		PrizeToChinese.put(Prize.ChaJinHua, "插金花");
-		PrizeToChinese.put(Prize.SiJinPlusYiXiu, "四进带一秀");
-		PrizeToChinese.put(Prize.SiJinPlusErJu, "四进带二举");
-		PrizeToChinese.put(Prize.WuZiPlusYiXiu, "五子登科带一秀");
+		PrizeToChinese.put(PrizeType.Nothing, "无");
+		PrizeToChinese.put(PrizeType.YiXiu, "一秀");
+		PrizeToChinese.put(PrizeType.ErJu, "二举");
+		PrizeToChinese.put(PrizeType.SiJin, "四进");
+		PrizeToChinese.put(PrizeType.SanHong, "三红");
+		PrizeToChinese.put(PrizeType.DuiTang, "对堂");
+		PrizeToChinese.put(PrizeType.SiHong, "四红");
+		PrizeToChinese.put(PrizeType.WuZiDengKe, "五子登科");
+		PrizeToChinese.put(PrizeType.WuHong, "五红");
+		PrizeToChinese.put(PrizeType.LiuBeiHei, "六杯黑");
+		PrizeToChinese.put(PrizeType.BianDiJin, "遍地锦");
+		PrizeToChinese.put(PrizeType.LiuBeiHong, "六杯红");
+		PrizeToChinese.put(PrizeType.ChaJinHua, "插金花");
+		PrizeToChinese.put(PrizeType.SiJinPlusYiXiu, "四进带一秀");
+		PrizeToChinese.put(PrizeType.SiJinPlusErJu, "四进带二举");
+		PrizeToChinese.put(PrizeType.WuZiPlusYiXiu, "五子登科带一秀");
 		// Map<Prize,PrizeClassified> PrizeClassify
-		PrizeClassify.put(Prize.Nothing, PrizeClassified.Nothing);
-		PrizeClassify.put(Prize.YiXiu, PrizeClassified.YiXiu);
-		PrizeClassify.put(Prize.ErJu, PrizeClassified.ErJu);
-		PrizeClassify.put(Prize.SiJin, PrizeClassified.SiJin);
-		PrizeClassify.put(Prize.SanHong, PrizeClassified.SanHong);
-		PrizeClassify.put(Prize.DuiTang, PrizeClassified.DuiTang);
-		PrizeClassify.put(Prize.SiHong, PrizeClassified.ZhuangYuan);
-		PrizeClassify.put(Prize.WuZiDengKe, PrizeClassified.ZhuangYuan);
-		PrizeClassify.put(Prize.WuHong, PrizeClassified.ZhuangYuan);
-		PrizeClassify.put(Prize.LiuBeiHei, PrizeClassified.ZhuangYuan);
-		PrizeClassify.put(Prize.BianDiJin, PrizeClassified.ZhuangYuan);
-		PrizeClassify.put(Prize.LiuBeiHong, PrizeClassified.ZhuangYuan);
-		PrizeClassify.put(Prize.ChaJinHua, PrizeClassified.ZhuangYuan);
-		PrizeClassify.put(Prize.SiJinPlusYiXiu, PrizeClassified.SiJinPlusYiXiu);
-		PrizeClassify.put(Prize.SiJinPlusErJu, PrizeClassified.SiJinPlusErJu);
-		PrizeClassify.put(Prize.WuZiPlusYiXiu, PrizeClassified.WuZiPlusYiXiu);
+		PrizeClassify.put(PrizeType.Nothing, PrizeClassified.Nothing);
+		PrizeClassify.put(PrizeType.YiXiu, PrizeClassified.YiXiu);
+		PrizeClassify.put(PrizeType.ErJu, PrizeClassified.ErJu);
+		PrizeClassify.put(PrizeType.SiJin, PrizeClassified.SiJin);
+		PrizeClassify.put(PrizeType.SanHong, PrizeClassified.SanHong);
+		PrizeClassify.put(PrizeType.DuiTang, PrizeClassified.DuiTang);
+		PrizeClassify.put(PrizeType.SiHong, PrizeClassified.ZhuangYuan);
+		PrizeClassify.put(PrizeType.WuZiDengKe, PrizeClassified.ZhuangYuan);
+		PrizeClassify.put(PrizeType.WuHong, PrizeClassified.ZhuangYuan);
+		PrizeClassify.put(PrizeType.LiuBeiHei, PrizeClassified.ZhuangYuan);
+		PrizeClassify.put(PrizeType.BianDiJin, PrizeClassified.ZhuangYuan);
+		PrizeClassify.put(PrizeType.LiuBeiHong, PrizeClassified.ZhuangYuan);
+		PrizeClassify.put(PrizeType.ChaJinHua, PrizeClassified.ZhuangYuan);
+		PrizeClassify.put(PrizeType.SiJinPlusYiXiu, PrizeClassified.SiJinPlusYiXiu);
+		PrizeClassify.put(PrizeType.SiJinPlusErJu, PrizeClassified.SiJinPlusErJu);
+		PrizeClassify.put(PrizeType.WuZiPlusYiXiu, PrizeClassified.WuZiPlusYiXiu);
 		// Map<Prize,Integer> ZhuangYuanWeight
-		
+
 	}
 
 	Gaming(int PlayerNum) {
-		this.PlayerNum = PlayerNum;
+		this.players = new Player[PlayerNum];
+
 	}
 
 	static String GetChineseName(Prize prize) {// return Chinese Name(String)
