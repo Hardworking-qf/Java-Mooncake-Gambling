@@ -43,127 +43,33 @@ enum PrizeClassified {// Prize Types Classified, intermediate enum of Prize and 
 
 //PrizeClassified to PrizeClassified2: 1 key to 1 or 2 value, can't use Map, use switch...case
 
-enum PrizeClassified2 {// Prize Types Classified 2, for storage 6 types of prize
-	YiXiu, // 一秀
-	ErJu, // 二举
-	SiJin, // 四进
-	SanHong, // 三红
-	DuiTang, // 对堂
-	ZhuangYuan// 状元
+enum PrizeClassified2 {// Except ZhuangYuan
+	YiXiu, ErJu, SiJin, SanHong, DuiTang
 }
 
 public class Lab2 {
 	public static void main(String[] args) {
-		Scanner scanner = new Scanner(System.in);
-		while (true) {
-//			new Mooncake_Gambling(new int[] { 2, 2, 2, 2, 2, 4 });// cheat
-			new Mooncake_Gambling();
-			String i = scanner.nextLine();
-			if (i.contains("q") || i.contains("Q"))
-				break;
-		}
-		System.out.println("See you next time!");
-		scanner.close();
+		/*
+		 * Scanner scanner = new Scanner(System.in); while (true) { // new
+		 * Mooncake_Gambling(new int[] { 2, 2, 2, 2, 2, 4 });// cheat new
+		 * Mooncake_Gambling(); String i = scanner.nextLine(); if (i.contains("q") ||
+		 * i.contains("Q")) break; } System.out.println("See you next time!");
+		 * scanner.close();
+		 */
+		Player p = new Player();
+		p.Draw();
+
 	}
 }
 
 class Mooncake_Gambling {
 	private int dice[] = new int[6];
 
-	Mooncake_Gambling() {// constructor
-		Random r = new Random();
-		for (int i = 0; i < 6; i++)// Summon random points
-			dice[i] = r.nextInt(6) + 1;
-		print_points();
-		print_result(judge_points());
-	}
-
-	Mooncake_Gambling(int[] cheat) {// cheat
-		dice = cheat;
-		print_points();
-		print_result(judge_points());
-	}
-
-	void print_points() {
-		System.out.print("Points of dices:");
-		for (int i = 0; i < 6; i++)
-			System.out.print(Integer.toString(dice[i]) + (i == 5 ? "\n" : " "));
-	}
-
-	PrizeType judge_points() {
-		int repeat[] = new int[6];
-		for (int i = 0; i < 6; i++)
-			repeat[dice[i] - 1]++;
-		int max_repeat_times = 0;
-		for (int i = 0; i < 6; i++)
-			max_repeat_times = Math.max(max_repeat_times, repeat[i]);
-		if (max_repeat_times == 1) {
-			return PrizeType.DuiTang;
-		} else if (max_repeat_times == 2 || max_repeat_times == 3) {
-			if (repeat[3] == 0)
-				return PrizeType.Nothing;
-			else if (repeat[3] == 1)
-				return PrizeType.YiXiu;
-			else if (repeat[3] == 2)
-				return PrizeType.ErJu;
-			else if (repeat[3] == 3)
-				return PrizeType.SanHong;
-		} else if (max_repeat_times == 4) {
-			if (repeat[3] == 4) {
-				if (repeat[0] == 2)
-					return PrizeType.ChaJinHua;
-				else
-					return PrizeType.SiHong;
-			} else {
-				if (repeat[3] == 1)
-					return PrizeType.SiJinPlusYiXiu;
-				else if (repeat[3] == 2)
-					return PrizeType.SiJinPlusErJu;
-				else
-					return PrizeType.SiJin;
-			}
-		} else if (max_repeat_times == 5) {
-			if (repeat[3] == 5)
-				return PrizeType.WuHong;
-			else {
-				if (repeat[3] == 1)
-					return PrizeType.WuZiPlusYiXiu;
-				else
-					return PrizeType.WuZiDengKe;
-			}
-		} else if (max_repeat_times == 6) {
-			if (repeat[0] == 6)
-				return PrizeType.BianDiJin;
-			else if (repeat[3] == 6)
-				return PrizeType.LiuBeiHong;
-			else
-				return PrizeType.LiuBeiHei;
-		}
-		return null;
-	}
-
 	void print_result(PrizeType result) {
 		if (result == PrizeType.Nothing)
 			System.out.println("You got Nothing! Wish you good luck next time!");
 		else
 			System.out.println("Congratulations! You got a(n) " + result);
-	}
-}
-
-class Player {
-//	private Map<Prize, Integer> WonPrize = new HashMap<Prize, Integer>();
-//	private Map<Prize, Integer> OverFlowPrize = new HashMap<Prize, Integer>();
-	private int WonPrize[] = new int[PrizeType.values().length];
-	private int WonPrizeClassified2[] = new int[PrizeClassified2.values().length];
-	private int OverFlowPrize[] = new int[PrizeType.values().length];
-	private Prize ZhuangYuan;
-
-	void WonPrize(Prize prize) {
-
-	}
-
-	int getPrizeNum(Prize prize) {
-		return 0;
 	}
 }
 
@@ -186,7 +92,27 @@ class Prize {
 		ZhuangYuanWeight.put(PrizeType.ChaJinHua, 6);
 	}
 
+	Prize() {
+		Random r = new Random();
+		int dice[] = new int[6];
+		for (int i = 0; i < 6; i++)// Summon random points
+			dice[i] = r.nextInt(6) + 1;
+		print_points(dice);
+		Judge_Prize(dice);
+	}
+
 	Prize(int dice[]) {
+		print_points(dice);
+		Judge_Prize(dice);
+	}
+
+	void print_points(int dice[]) {
+		System.out.print("Points of dices:");
+		for (int i = 0; i < 6; i++)
+			System.out.print(Integer.toString(dice[i]) + (i == 5 ? "\n" : " "));
+	}
+
+	private void Judge_Prize(int dice[]) {
 		for (int i = 0; i < 6; i++) {
 			this.dice_repeat[dice[i] - 1]++;
 			this.pointsum += dice[i];
@@ -242,6 +168,12 @@ class Prize {
 		}
 	}
 
+	public boolean isZhuangYuan() {
+		return this.prize_type != PrizeType.Nothing && this.prize_type != PrizeType.YiXiu
+				&& this.prize_type != PrizeType.ErJu && this.prize_type != PrizeType.SiJin
+				&& this.prize_type != PrizeType.SanHong && this.prize_type != PrizeType.DuiTang;
+	}
+
 	public boolean ZhuangYuan_isGreaterThan(Prize cmp) {// Compare between ZhuangYuan
 		if (ZhuangYuanWeight.get(this.prize_type) > ZhuangYuanWeight.get(cmp.prize_type))
 			return true;
@@ -273,25 +205,22 @@ class Prize {
 			}
 		}
 	}
+
+	public PrizeType getPrizeType() {
+		return this.prize_type;
+	}
 }
 
-class Gaming {
-	private Player players[];
-	// Prize Num Set
-	private final int ZhuangYuanNumSet = 1;
-	private final int DuiTangNumSet = 2;
-	private final int SanHongNumSet = 4;
-	private final int SiJinNumSet = 8;
-	private final int ErJuNumSet = 16;
-	private final int YiXiuNumSet = 32;
+class Player {
+//	private Map<Prize, Integer> WonPrize = new HashMap<Prize, Integer>();
+//	private Map<Prize, Integer> OverFlowPrize = new HashMap<Prize, Integer>();
+	public int PrizeNumCount[] = new int[5]; // Prize Num Count
+	private Prize ZhuangYuan = null;
+	Gaming gaming;
 
-	// Prize Num Count
-	private int ZhuangYuanNumCount = 0;
-	private int DuiTangNumCount = 0;
-	private int SanHongNumCount = 0;
-	private int SiJinNumCount = 0;
-	private int ErJuNumCount = 0;
-	private int YiXiuNumCount = 0;
+	Player(Gaming gaming) {
+		this.gaming = gaming;
+	}
 
 	private static Map<PrizeType, String> PrizeToChinese = new HashMap<PrizeType, String>();
 	private static Map<PrizeType, PrizeClassified> PrizeClassify = new HashMap<PrizeType, PrizeClassified>();
@@ -329,22 +258,66 @@ class Gaming {
 		PrizeClassify.put(PrizeType.SiJinPlusYiXiu, PrizeClassified.SiJinPlusYiXiu);
 		PrizeClassify.put(PrizeType.SiJinPlusErJu, PrizeClassified.SiJinPlusErJu);
 		PrizeClassify.put(PrizeType.WuZiPlusYiXiu, PrizeClassified.WuZiPlusYiXiu);
-		// Map<Prize,Integer> ZhuangYuanWeight
+	}
+
+	void Draw() {
+		Prize newPrize = new Prize();
+		PrizeClassified newPrizeType = ClassifyPrize(newPrize.getPrizeType());
+		if (newPrizeType == PrizeClassified.Nothing)
+			return;
+		else if (newPrizeType == PrizeClassified.YiXiu && !this.gaming.isPrizeFull(0))
+			AddPrize(0);
+		else if (newPrizeType == PrizeClassified.ErJu && !this.gaming.isPrizeFull(1))
+			AddPrize(1);
+		else if (newPrizeType == PrizeClassified.SiJin && !this.gaming.isPrizeFull(2))
+			AddPrize(2);
+		else if (newPrizeType == PrizeClassified.SanHong && !this.gaming.isPrizeFull(3))
+			AddPrize(3);
+		else if (newPrizeType == PrizeClassified.DuiTang && !this.gaming.isPrizeFull(4))
+			AddPrize(4);
 
 	}
 
-	Gaming(int PlayerNum) {
-		this.players = new Player[PlayerNum];
-
+	void AddPrize(int PrizeIndex) {
+		++this.PrizeNumCount[PrizeIndex];
+		this.gaming.AddPrize(PrizeIndex);
 	}
 
-	static String GetChineseName(Prize prize) {// return Chinese Name(String)
-		return PrizeToChinese.get(prize);
+	static String GetChineseName(PrizeType prizetype) {// return Chinese Name(String)
+		return PrizeToChinese.get(prizetype);
 	}
 
-	static PrizeClassified ClassifyPrize(Prize prize) {// return classified result
-		return PrizeClassify.get(prize);
+	static PrizeClassified ClassifyPrize(PrizeType prizetype) {// return classified result
+		return PrizeClassify.get(prizetype);
 //	}
+	}
+
+	class Gaming {
+		private Player players[];
+		public final int PrizeNumSet[] = new int[] { 32, 16, 8, 4, 2 }; // Prize Num Set
+		public int PrizeNumCount[] = new int[5]; // Prize Num Count
+		public Prize ZhuangYuan = null;
+
+		Gaming(int PlayerNum) {
+			this.players = new Player[PlayerNum];
+
+		}
+
+		public void Start_Game() {
+			for (int i = 0; i < this.players.length; i++) {
+
+				i = i == this.players.length ? 0 : i;
+			}
+		}
+
+		public boolean isPrizeFull(int PrizeIndex) {
+			return PrizeNumCount[PrizeIndex] < PrizeNumSet[PrizeIndex];
+		}
+
+		public void AddPrize(int PrizeIndex) {
+			++PrizeNumCount[PrizeIndex];
+		}
+
 //	
 //	static bool IsGreater() {
 
