@@ -56,7 +56,8 @@ public class Lab2 {
 		 * i.contains("Q")) break; } System.out.println("See you next time!");
 		 * scanner.close();
 		 */
-		Player p = new Player();
+		Gaming Game = new Gaming(1);
+		Player p = new Player(Game);
 		p.Draw();
 
 	}
@@ -95,7 +96,7 @@ class Prize {
 	Prize() {
 		Random r = new Random();
 		int dice[] = new int[6];
-		for (int i = 0; i < 6; i++)// Summon random points
+		for (int i = 0; i < 6; ++i)// Summon random points
 			dice[i] = r.nextInt(6) + 1;
 		print_points(dice);
 		Judge_Prize(dice);
@@ -108,16 +109,16 @@ class Prize {
 
 	void print_points(int dice[]) {
 		System.out.print("Points of dices:");
-		for (int i = 0; i < 6; i++)
+		for (int i = 0; i < 6; ++i)
 			System.out.print(Integer.toString(dice[i]) + (i == 5 ? "\n" : " "));
 	}
 
 	private void Judge_Prize(int dice[]) {
-		for (int i = 0; i < 6; i++) {
-			this.dice_repeat[dice[i] - 1]++;
+		for (int i = 0; i < 6; ++i) {
+			++this.dice_repeat[dice[i] - 1];
 			this.pointsum += dice[i];
 		}
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < 6; ++i) {
 			if (this.dice_repeat[i] > this.max_repeat_time) {
 				this.max_repeat_time = this.dice_repeat[i];
 				this.max_repeat_num = i + 1;
@@ -188,7 +189,7 @@ class Prize {
 				return true;// Self is Greater when equal
 			else {// CMP between WuZi
 				int this_appear_once = 0, this_appear_fifth = 0, cmp_appear_once = 0, cmp_appear_fifth = 0;
-				for (int i = 0; i < 6; i++) {
+				for (int i = 0; i < 6; ++i) {
 					if (this.dice_repeat[i] == 1)
 						this_appear_once = i;
 					else if (this.dice_repeat[i] == 5)
@@ -275,12 +276,35 @@ class Player {
 			AddPrize(3);
 		else if (newPrizeType == PrizeClassified.DuiTang && !this.gaming.isPrizeFull(4))
 			AddPrize(4);
-
+		else if (newPrizeType == PrizeClassified.SiJinPlusYiXiu) {
+			if (this.gaming.isPrizeFull(0))
+				AddPrize(0);
+			if (this.gaming.isPrizeFull(2))
+				AddPrize(2);
+		} else if (newPrizeType == PrizeClassified.SiJinPlusErJu) {
+			if (this.gaming.isPrizeFull(1))
+				AddPrize(1);
+			if (this.gaming.isPrizeFull(2))
+				AddPrize(2);
+		} else if (newPrizeType == PrizeClassified.WuZiPlusYiXiu) {
+			if (this.gaming.isPrizeFull(0))
+				AddPrize(0);
+			AddZhuangYuan(newPrize);
+		} else
+			AddZhuangYuan(newPrize);
 	}
 
-	void AddPrize(int PrizeIndex) {
+	private void AddPrize(int PrizeIndex) {
 		++this.PrizeNumCount[PrizeIndex];
 		this.gaming.AddPrize(PrizeIndex);
+	}
+
+	private void AddZhuangYuan(Prize ZhuangYuan) {
+		this.ZhuangYuan = ZhuangYuan;
+		//还需考虑自己摇出一个比自己状元大的状元
+		
+		
+		this.gaming.AddZhuangYuan(ZhuangYuan);
 	}
 
 	static String GetChineseName(PrizeType prizetype) {// return Chinese Name(String)
@@ -289,37 +313,43 @@ class Player {
 
 	static PrizeClassified ClassifyPrize(PrizeType prizetype) {// return classified result
 		return PrizeClassify.get(prizetype);
-//	}
 	}
 
-	class Gaming {
-		private Player players[];
-		public final int PrizeNumSet[] = new int[] { 32, 16, 8, 4, 2 }; // Prize Num Set
-		public int PrizeNumCount[] = new int[5]; // Prize Num Count
-		public Prize ZhuangYuan = null;
+	public Prize getZhuangYuan() {
+		return this.ZhuangYuan;
+	}
+}
 
-		Gaming(int PlayerNum) {
-			this.players = new Player[PlayerNum];
+class Gaming {
+	private Player players[];
+	public final int PrizeNumSet[] = new int[] { 32, 16, 8, 4, 2 }; // Prize Num Set
+	public int PrizeNumCount[] = new int[5]; // Prize Num Count
+	int CurrentPlayerIndex = 0;
+	int ZhuangYuanBelongIndex = -1;
 
+	Gaming(int PlayerNum) {
+		this.players = new Player[PlayerNum];
+
+	}
+
+	public void Start_Game() {
+		for (; this.CurrentPlayerIndex < this.players.length; ++this.CurrentPlayerIndex) {
+
+			this.CurrentPlayerIndex = this.CurrentPlayerIndex == this.players.length ? 0 : this.CurrentPlayerIndex;
 		}
+	}
 
-		public void Start_Game() {
-			for (int i = 0; i < this.players.length; i++) {
+	public boolean isPrizeFull(int PrizeIndex) {
+		return PrizeNumCount[PrizeIndex] < PrizeNumSet[PrizeIndex];
+	}
 
-				i = i == this.players.length ? 0 : i;
-			}
+	public void AddPrize(int PrizeIndex) {
+		++PrizeNumCount[PrizeIndex];
+	}
+
+	public void AddZhuangYuan(Prize ZhuangYuan) {
+		if(this.ZhuangYuanBelongIndex==-1) {
+			this.ZhuangYuanBelongIndex=this.CurrentPlayerIndex;
 		}
-
-		public boolean isPrizeFull(int PrizeIndex) {
-			return PrizeNumCount[PrizeIndex] < PrizeNumSet[PrizeIndex];
-		}
-
-		public void AddPrize(int PrizeIndex) {
-			++PrizeNumCount[PrizeIndex];
-		}
-
-//	
-//	static bool IsGreater() {
-
 	}
 }
