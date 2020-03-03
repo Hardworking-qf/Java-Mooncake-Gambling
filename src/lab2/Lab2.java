@@ -5,7 +5,7 @@ import java.util.Scanner;
 import java.util.HashMap;
 import java.util.Map;
 
-enum PrizeType {// Prize Types
+enum PrizeType {// 奖项细分
 	Nothing, // 白给
 	YiXiu, // 一秀 一个四
 	ErJu, // 二举 两个四
@@ -23,11 +23,9 @@ enum PrizeType {// Prize Types
 	SiJinPlusYiXiu, // 四进带一秀
 	SiJinPlusErJu, // 四进带二举
 	WuZiPlusYiXiu// 五子带一秀
-}// Total 16 Types
+}// 共16种
 
-//Prize To PrizeClassified: 1 key to 1 value, can use Map
-
-enum PrizeClassified {// Prize Types Classified, intermediate enum of Prize and PrizeClassified2
+enum PrizeClassified {// 奖项整理
 	Nothing, // 白给
 	YiXiu, // 一秀
 	ErJu, // 二举
@@ -39,24 +37,31 @@ enum PrizeClassified {// Prize Types Classified, intermediate enum of Prize and 
 	SiJinPlusYiXiu, // 四进带一秀
 	SiJinPlusErJu, // 四进带二举
 	WuZiPlusYiXiu// 五子带一秀
-}// Total 10 Types
+}// 共10种
 
 public class Lab2 {
 	public static void main(String[] args) {
-//		System.out.println(new Prize(new int[] {4,4,4,4,1,1}).
-//				ZhuangYuan_isGreaterThan(new Prize(new int[] {2,2,2,2,2,4})));
-		new Gaming(6);
+		int PlayerNum;
+		try (Scanner scanner = new Scanner(System.in)) {
+			System.out.print("请输入玩家个数(6 ~ 10):");
+			PlayerNum = scanner.nextInt();
+			if (6 <= PlayerNum && PlayerNum <= 10)
+				new Gaming(PlayerNum);
+			else
+				System.out.println("人数必须为6 ~ 10人");
+		}
+//		System.out.println(new Prize(new int[] { 4, 4, 4, 4, 1, 1 })
+//				.ZhuangYuan_isGreaterThan(new Prize(new int[] { 2, 2, 2, 2, 2, 4 })));// 测试用
 	}
 }
 
-
 class Prize {
-	private int dice_repeat[] = new int[6];// save repeat counts for each point(1~6)
-	private int max_repeat_time = 0;// the max repeat time for each num
+	private int dice_repeat[] = new int[6];// 骰子重复次数
+	private int max_repeat_time = 0;// 骰子最大重复次数
 	private int pointsum = 0;
 	private PrizeType prize_type = null;
 
-	private static Map<PrizeType, Integer> ZhuangYuanWeight = new HashMap<PrizeType, Integer>();
+	private static Map<PrizeType, Integer> ZhuangYuanWeight = new HashMap<PrizeType, Integer>();// 状元权重
 	static {
 		ZhuangYuanWeight.put(PrizeType.SiHong, 0);
 		ZhuangYuanWeight.put(PrizeType.WuZiDengKe, 1);
@@ -67,7 +72,7 @@ class Prize {
 		ZhuangYuanWeight.put(PrizeType.LiuBeiHong, 5);
 		ZhuangYuanWeight.put(PrizeType.ChaJinHua, 6);
 	}
-	private static Map<PrizeType, String> PrizeToChinese = new HashMap<PrizeType, String>();
+	private static Map<PrizeType, String> PrizeToChinese = new HashMap<PrizeType, String>();// 中文输出
 	static {
 		PrizeToChinese.put(PrizeType.Nothing, "无");
 		PrizeToChinese.put(PrizeType.YiXiu, "一秀");
@@ -81,106 +86,105 @@ class Prize {
 		PrizeToChinese.put(PrizeType.LiuBeiHei, "六杯黑");
 		PrizeToChinese.put(PrizeType.BianDiJin, "遍地锦");
 		PrizeToChinese.put(PrizeType.LiuBeiHong, "六杯红");
-		PrizeToChinese.put(PrizeType.ChaJinHua, "插金花");
-		PrizeToChinese.put(PrizeType.SiJinPlusYiXiu, "四进带一秀");
-		PrizeToChinese.put(PrizeType.SiJinPlusErJu, "四进带二举");
-		PrizeToChinese.put(PrizeType.WuZiPlusYiXiu, "五子登科带一秀");
+		PrizeToChinese.put(PrizeType.ChaJinHua, "状元插金花");
+		PrizeToChinese.put(PrizeType.SiJinPlusYiXiu, "四进(带一秀)");
+		PrizeToChinese.put(PrizeType.SiJinPlusErJu, "四进(带二举)");
+		PrizeToChinese.put(PrizeType.WuZiPlusYiXiu, "五子登科(带一秀)");
 	}
 
-	Prize() {
+	Prize() {// 构造函数
 		Random r = new Random();
 		int dice[] = new int[6];
-		for (int i = 0; i < 6; ++i)// Summon random points
+		for (int i = 0; i < 6; ++i)// 随机数生成
 			dice[i] = r.nextInt(6) + 1;
 		print_points(dice);
 		Judge_Prize(dice);
 	}
 
-	Prize(int dice[]) {
+	Prize(int dice[]) {// 构造函数(调试入口)
 		print_points(dice);
 		Judge_Prize(dice);
 	}
 
-	void print_points(int dice[]) {
+	void print_points(int dice[]) {// 输出点数
 		System.out.print("Points of dices:");
 		for (int i = 0; i < 6; ++i)
 			System.out.print(Integer.toString(dice[i]) + (i == 5 ? "\n" : " "));
 	}
 
-	private void Judge_Prize(int dice[]) {
-		for (int i = 0; i < 6; ++i) {
+	private void Judge_Prize(int dice[]) {// 判断奖项
+		for (int i = 0; i < 6; ++i) {// 统计
 			++this.dice_repeat[dice[i] - 1];
 			this.pointsum += dice[i];
 		}
-		for (int i = 0; i < 6; ++i)
+		for (int i = 0; i < 6; ++i)// 找出最大重复数
 			if (this.dice_repeat[i] > this.max_repeat_time)
 				this.max_repeat_time = this.dice_repeat[i];
-		// prize judge
-		if (max_repeat_time == 1) {// all appear once
+		if (max_repeat_time == 1) {// 根据抽屉原理，所有点数出现一次必为状元
 			this.prize_type = PrizeType.DuiTang;
-		} else if (max_repeat_time == 2 || max_repeat_time == 3) {// point 4 repeat 2 or 3 times
-			if (dice_repeat[3] == 0)
+		} else if (max_repeat_time == 2 || max_repeat_time == 3) {// 最大重复出现为2或3次
+			if (dice_repeat[3] == 0)// 重复数字不为4
 				this.prize_type = PrizeType.Nothing;
-			else if (dice_repeat[3] == 1)
+			else if (dice_repeat[3] == 1)// 4出现1次
 				this.prize_type = PrizeType.YiXiu;
-			else if (dice_repeat[3] == 2)
+			else if (dice_repeat[3] == 2)// 4出现2次
 				this.prize_type = PrizeType.ErJu;
-			else if (dice_repeat[3] == 3)
+			else if (dice_repeat[3] == 3)// 4出现3次
 				this.prize_type = PrizeType.SanHong;
-		} else if (max_repeat_time == 4) {// something repeat 4 times
-			if (dice_repeat[3] == 4) {
-				if (dice_repeat[0] == 2)
+		} else if (max_repeat_time == 4) {// 最大重复出现为4次
+			if (dice_repeat[3] == 4) {// 4重复出现4次
+				if (dice_repeat[0] == 2)// 444411
 					this.prize_type = PrizeType.ChaJinHua;
-				else
+				else// 非444411
 					this.prize_type = PrizeType.SiHong;
-			} else {// SiJin Plus sth or nothing
-				if (dice_repeat[3] == 1)
+			} else {// 非4重复出现4次
+				if (dice_repeat[3] == 1)// 带一秀
 					this.prize_type = PrizeType.SiJinPlusYiXiu;
-				else if (dice_repeat[3] == 2)
+				else if (dice_repeat[3] == 2)// 带二举
 					this.prize_type = PrizeType.SiJinPlusErJu;
-				else
+				else// 啥也不带
 					this.prize_type = PrizeType.SiJin;
 			}
-		} else if (max_repeat_time == 5) {// sth repeat 5 times
-			if (dice_repeat[3] == 5)
+		} else if (max_repeat_time == 5) {// 最大重复出现为5次
+			if (dice_repeat[3] == 5)// 4出现5次
 				this.prize_type = PrizeType.WuHong;
-			else {// Wuzi Plus sth or nothing
-				if (dice_repeat[3] == 1)
+			else {// 五子登科
+				if (dice_repeat[3] == 1)// 带一秀
 					this.prize_type = PrizeType.WuZiPlusYiXiu;
-				else
+				else// 啥也不带
 					this.prize_type = PrizeType.WuZiDengKe;
 			}
-		} else if (max_repeat_time == 6) {// sth repeat 6 times
-			if (dice_repeat[0] == 6)
+		} else if (max_repeat_time == 6) {// 最大重复出现为6次
+			if (dice_repeat[0] == 6)// 111111
 				this.prize_type = PrizeType.BianDiJin;
-			else if (dice_repeat[3] == 6)
+			else if (dice_repeat[3] == 6)// 444444
 				this.prize_type = PrizeType.LiuBeiHong;
-			else
+			else// 其它
 				this.prize_type = PrizeType.LiuBeiHei;
 		}
 	}
 
-	public boolean isZhuangYuan() {
+	public boolean isZhuangYuan() {// 判断是否为状元
 		return this.prize_type != PrizeType.Nothing && this.prize_type != PrizeType.YiXiu
 				&& this.prize_type != PrizeType.ErJu && this.prize_type != PrizeType.SiJin
 				&& this.prize_type != PrizeType.SanHong && this.prize_type != PrizeType.DuiTang;
 	}
 
-	public boolean ZhuangYuan_isGreaterThan(Prize cmp) {// Compare between ZhuangYuan
+	public boolean ZhuangYuan_isGreaterThan(Prize cmp) {// 比较状元大小
 		if (ZhuangYuanWeight.get(this.prize_type) > ZhuangYuanWeight.get(cmp.prize_type))
 			return true;
-		else if (ZhuangYuanWeight.get(this.prize_type) < ZhuangYuanWeight.get(cmp.prize_type))
+		else if (ZhuangYuanWeight.get(this.prize_type) < ZhuangYuanWeight.get(cmp.prize_type))// 先比较一波权重
 			return false;
-		else {
+		else {// 同权重对比
 			if (this.prize_type == PrizeType.SiHong || this.prize_type == PrizeType.WuHong
-					|| this.prize_type == PrizeType.LiuBeiHei)// Only need to CMP SUM
-				return this.pointsum > cmp.pointsum;// Self is Smaller when equal
+					|| this.prize_type == PrizeType.LiuBeiHei)// 四红、五红、六杯黑只需要比较总和
+				return this.pointsum > cmp.pointsum;// 相等的情况返回false
 			else if (this.prize_type == PrizeType.BianDiJin || this.prize_type == PrizeType.LiuBeiHong
-					|| this.prize_type == PrizeType.ChaJinHua)
-				return false;// Self is Smaller when equal
-			else {// CMP between WuZi
+					|| this.prize_type == PrizeType.ChaJinHua)// 遍地锦、六杯红、状元插金花只有固定点数型
+				return false;// 先到先得，返回false
+			else {// 五子登科间比较
 				int this_appear_once = 0, this_appear_fifth = 0, cmp_appear_once = 0, cmp_appear_fifth = 0;
-				for (int i = 0; i < 6; ++i) {
+				for (int i = 0; i < 6; ++i) {// 这段for循环先筛选出分别重复1次和5次的点数
 					if (this.dice_repeat[i] == 1)
 						this_appear_once = i;
 					else if (this.dice_repeat[i] == 5)
@@ -190,34 +194,32 @@ class Prize {
 					else if (cmp.dice_repeat[i] == 5)
 						cmp_appear_fifth = i;
 				}
-				if (this_appear_once == cmp_appear_once)
-					return this_appear_fifth > cmp_appear_fifth;
+				if (this_appear_once != cmp_appear_once)// 如果重复一次的不相等
+					return this_appear_once > cmp_appear_once;// 优先比较重复1次的
 				else
-					return this_appear_once > cmp_appear_once;
+					return this_appear_fifth > cmp_appear_fifth;// 而后比较重复5次的
 			}
 		}
 	}
 
-	public PrizeType getPrizeType() {
+	public PrizeType getPrizeType() {// PrizeType的getter
 		return this.prize_type;
 	}
 
-	public String toString() {// return Chinese Name(String)
+	public String toString() {// 重写toString
 		return PrizeToChinese.get(this.prize_type);
 	}
 }
 
 class Player {
-//	private Map<Prize, Integer> WonPrize = new HashMap<Prize, Integer>();
-//	private Map<Prize, Integer> OverFlowPrize = new HashMap<Prize, Integer>();
-	public int PrizeNumCount[] = new int[5]; // Prize Num Count (YiXiu, ErJu, SiJin, SanHong, DuiTang)
-	Gaming gaming;
+	private int PrizeNumCount[] = new int[5]; // 存储玩家获得奖项数(一秀，二举，四进、三红、对堂)
+	Gaming gaming;// 指向gaming对象的引用
 
-	Player(Gaming gaming) {
+	Player(Gaming gaming) {// 初始化
 		this.gaming = gaming;
 	}
 
-	private static Map<PrizeType, PrizeClassified> PrizeClassify = new HashMap<PrizeType, PrizeClassified>();
+	private static Map<PrizeType, PrizeClassified> PrizeClassify = new HashMap<PrizeType, PrizeClassified>();// 奖项整理
 	static {// 初始化map
 		// Map<Prize,PrizeClassified> PrizeClassify
 		PrizeClassify.put(PrizeType.Nothing, PrizeClassified.Nothing);
@@ -238,11 +240,12 @@ class Player {
 		PrizeClassify.put(PrizeType.WuZiPlusYiXiu, PrizeClassified.WuZiPlusYiXiu);
 	}
 
-	void Draw() {
+	void Draw() {// 抽奖
 		Prize newPrize = new Prize();
 		System.out.println(newPrize.getPrizeType());
 		PrizeClassified newPrizeType = ClassifyPrize(newPrize.getPrizeType());
-		// System.out.println(newPrizeType);
+//		System.out.println(newPrizeType);// 测试用
+		// 以下各种判断，目的是检验是否奖项已满，若未满则记录奖项
 		if (newPrizeType == PrizeClassified.Nothing)
 			return;
 		else if (newPrizeType == PrizeClassified.YiXiu) {
@@ -280,61 +283,72 @@ class Player {
 				AddPrize(0);
 			this.gaming.AddZhuangYuan(newPrize);
 		} else
-			this.gaming.AddZhuangYuan(newPrize);
+			this.gaming.AddZhuangYuan(newPrize);// 状元部分处理
 	}
 
-	private void AddPrize(int PrizeIndex) {
+	private void AddPrize(int PrizeIndex) {// 增加奖项记录（状元以外）
 		++this.PrizeNumCount[PrizeIndex];
 		this.gaming.AddPrize(PrizeIndex);
 	}
 
-	static PrizeClassified ClassifyPrize(PrizeType prizetype) {// return classified result
+	public int[] getPrizeNumCount() {// PrizeNumCount的getter
+		return this.PrizeNumCount;
+	}
+
+	static PrizeClassified ClassifyPrize(PrizeType prizetype) {// PrizeClassified字典的查询接口
 		return PrizeClassify.get(prizetype);
 	}
 }
 
 class Gaming {
 	private Player players[];
-	public final int PrizeNumSet[] = new int[] { 32, 16, 8, 4, 2 }; // Prize Num Set (YiXiu, ErJu, SiJin, SanHong,
-																	// DuiTang)
-	public int PrizeNumCount[] = new int[5]; // Prize Num Count
-	int CurrentPlayerIndex = 0;
-	int ZhuangYuanBelongIndex = -1;
-	private Prize ZhuangYuan = null;
+	public final int PrizeNumSet[] = new int[] { 32, 16, 8, 4, 2 }; // 一秀，二举，四进、三红、对堂个数上限限制（状元只有一个）
+	public int PrizeNumCount[] = new int[5]; // 奖项数量统计
+	int CurrentPlayerIndex = 0;// 当前玩家编号
+	int ZhuangYuanBelongIndex = -1;// 状元归属
+	private Prize ZhuangYuan = null;// 记录当前状元
 
 	Gaming(int PlayerNum) {
 		this.players = new Player[PlayerNum];
 		for (int i = 0; i < PlayerNum; ++i)
-			this.players[i] = new Player(this);
-		this.Start_Game();
+			this.players[i] = new Player(this);// 初始化player
+		this.Start_Game();// 开始游戏
 	}
 
-	private void Start_Game() {
-		int count = 0;
+	private void Start_Game() {// 开始游戏
+		int count = 0;// 用于统计游戏进行次数
 		while (this.CurrentPlayerIndex < this.players.length) {
 			this.players[this.CurrentPlayerIndex].Draw();
-			if (this.isAllPrizeFull())
+			if (this.isAllPrizeFull())// 所有奖项满（包含状元）则结束游戏
 				break;
 			++this.CurrentPlayerIndex;
-			this.CurrentPlayerIndex = this.CurrentPlayerIndex == this.players.length ? 0 : this.CurrentPlayerIndex;
+			this.CurrentPlayerIndex = this.CurrentPlayerIndex == this.players.length ? 0 : this.CurrentPlayerIndex;// 循环
 			++count;
 		}
 		System.out.println("总次数:" + count);
-		this.End_Game();
+		this.End_Game();// 结束游戏
 	}
 
-	private void End_Game() {
-		for (int i = 0; i < this.players.length; ++i) {
-
+	private void End_Game() {// 结束游戏的结算
+		for (int i = 0; i < this.players.length; ++i) {// 循环输出所有玩家奖项
+			System.out.println("第" + i + "号玩家所获得奖项:");
+			System.out.println("一秀" + this.players[i].getPrizeNumCount()[0] + "个");
+			System.out.println("二举" + this.players[i].getPrizeNumCount()[1] + "个");
+			System.out.println("四进" + this.players[i].getPrizeNumCount()[2] + "个");
+			System.out.println("三红" + this.players[i].getPrizeNumCount()[3] + "个");
+			System.out.println("对堂" + this.players[i].getPrizeNumCount()[4] + "个");
+			if (i == this.ZhuangYuanBelongIndex)
+				System.out.println("最终状元得主，所得状元为：" + this.ZhuangYuan);
+			System.out.println();
 		}
-		System.out.println("最终状元为" + this.ZhuangYuanBelongIndex + "号玩家，所得状元为：" + this.ZhuangYuan);
+		System.out.println("最终状元为" + this.ZhuangYuanBelongIndex + "号玩家，所得状元为：" + this.ZhuangYuan);// 最后输出状元
 	}
 
-	public boolean isPrizeFull(int PrizeIndex) {
+	public boolean isPrizeFull(int PrizeIndex) {// 判断某一个奖项是否已满
 		return PrizeNumCount[PrizeIndex] == PrizeNumSet[PrizeIndex];
 	}
 
-	private boolean isAllPrizeFull() {
+	private boolean isAllPrizeFull() {// 判断是否所有奖项已满
 		boolean result = true;
 		for (int i = 0; i < 5; ++i)
 			result &= this.isPrizeFull(i);
@@ -342,15 +356,15 @@ class Gaming {
 		return result;
 	}
 
-	public void AddPrize(int PrizeIndex) {
+	public void AddPrize(int PrizeIndex) {// PrizeNumCount的setter
 		++PrizeNumCount[PrizeIndex];
 	}
 
 	public void AddZhuangYuan(Prize ZhuangYuan) {
-		if (this.ZhuangYuanBelongIndex == -1 || // if ZhuangYuan not appear
-				ZhuangYuan.ZhuangYuan_isGreaterThan(this.ZhuangYuan)) {// if New ZhuangYuan Greater
+		if (this.ZhuangYuanBelongIndex == -1 || // 状元未出现
+				ZhuangYuan.ZhuangYuan_isGreaterThan(this.ZhuangYuan)) {// 新状元更大
 			this.ZhuangYuanBelongIndex = this.CurrentPlayerIndex;
-			this.ZhuangYuan = ZhuangYuan;
+			this.ZhuangYuan = ZhuangYuan;// 更新状元信息
 		}
 	}
 }
