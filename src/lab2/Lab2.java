@@ -243,47 +243,57 @@ class Player {
 	void Draw() {// 抽奖
 		Prize newPrize = new Prize();
 		System.out.println(newPrize.getPrizeType());
-		PrizeClassified newPrizeType = ClassifyPrize(newPrize.getPrizeType());
 //		System.out.println(newPrizeType);// 测试用
 		// 以下各种判断，目的是检验是否奖项已满，若未满则记录奖项
-		if (newPrizeType == PrizeClassified.Nothing)
+		switch (newPrize.getPrizeType()) {
+		case Nothing:
 			return;
-		else if (newPrizeType == PrizeClassified.YiXiu) {
+		case YiXiu:
 			if (this.gaming.isPrizeFull(0))
 				return;
 			AddPrize(0);
-		} else if (newPrizeType == PrizeClassified.ErJu) {
+			break;
+		case ErJu:
 			if (this.gaming.isPrizeFull(1))
 				return;
 			AddPrize(1);
-		} else if (newPrizeType == PrizeClassified.SiJin) {
+			break;
+		case SiJin:
 			if (this.gaming.isPrizeFull(2))
 				return;
 			AddPrize(2);
-		} else if (newPrizeType == PrizeClassified.SanHong) {
+			break;
+		case SanHong:
 			if (this.gaming.isPrizeFull(3))
 				return;
 			AddPrize(3);
-		} else if (newPrizeType == PrizeClassified.DuiTang) {
+			break;
+		case DuiTang:
 			if (this.gaming.isPrizeFull(4))
 				return;
 			AddPrize(4);
-		} else if (newPrizeType == PrizeClassified.SiJinPlusYiXiu) {
+			break;
+		case SiJinPlusYiXiu:
 			if (!this.gaming.isPrizeFull(0))
 				AddPrize(0);
 			if (!this.gaming.isPrizeFull(2))
 				AddPrize(2);
-		} else if (newPrizeType == PrizeClassified.SiJinPlusErJu) {
+			break;
+		case SiJinPlusErJu:
 			if (!this.gaming.isPrizeFull(1))
 				AddPrize(1);
 			if (!this.gaming.isPrizeFull(2))
 				AddPrize(2);
-		} else if (newPrizeType == PrizeClassified.WuZiPlusYiXiu) {
+			break;
+		case WuZiPlusYiXiu:
 			if (!this.gaming.isPrizeFull(0))
 				AddPrize(0);
 			this.gaming.AddZhuangYuan(newPrize);
-		} else
-			this.gaming.AddZhuangYuan(newPrize);// 状元部分处理
+			break;
+		default:
+			this.gaming.AddZhuangYuan(newPrize);
+			break;
+		}
 	}
 
 	private void AddPrize(int PrizeIndex) {// 增加奖项记录（状元以外）
