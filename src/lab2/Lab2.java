@@ -25,20 +25,6 @@ enum PrizeType {// 奖项细分
 	WuZiPlusYiXiu// 五子带一秀
 }// 共16种
 
-enum PrizeClassified {// 奖项整理
-	Nothing, // 白给
-	YiXiu, // 一秀
-	ErJu, // 二举
-	SiJin, // 四进
-	SanHong, // 三红
-	DuiTang, // 对堂
-	ZhuangYuan, // 状元
-	// 复合型
-	SiJinPlusYiXiu, // 四进带一秀
-	SiJinPlusErJu, // 四进带二举
-	WuZiPlusYiXiu// 五子带一秀
-}// 共10种
-
 public class Lab2 {
 	public static void main(String[] args) {
 		int PlayerNum;
