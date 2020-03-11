@@ -219,27 +219,6 @@ class Player {
 		this.gaming = gaming;
 	}
 
-	private static Map<PrizeType, PrizeClassified> PrizeClassify = new HashMap<PrizeType, PrizeClassified>();// 奖项整理
-	static {// 初始化map
-		// Map<Prize,PrizeClassified> PrizeClassify
-		PrizeClassify.put(PrizeType.Nothing, PrizeClassified.Nothing);
-		PrizeClassify.put(PrizeType.YiXiu, PrizeClassified.YiXiu);
-		PrizeClassify.put(PrizeType.ErJu, PrizeClassified.ErJu);
-		PrizeClassify.put(PrizeType.SiJin, PrizeClassified.SiJin);
-		PrizeClassify.put(PrizeType.SanHong, PrizeClassified.SanHong);
-		PrizeClassify.put(PrizeType.DuiTang, PrizeClassified.DuiTang);
-		PrizeClassify.put(PrizeType.SiHong, PrizeClassified.ZhuangYuan);
-		PrizeClassify.put(PrizeType.WuZiDengKe, PrizeClassified.ZhuangYuan);
-		PrizeClassify.put(PrizeType.WuHong, PrizeClassified.ZhuangYuan);
-		PrizeClassify.put(PrizeType.LiuBeiHei, PrizeClassified.ZhuangYuan);
-		PrizeClassify.put(PrizeType.BianDiJin, PrizeClassified.ZhuangYuan);
-		PrizeClassify.put(PrizeType.LiuBeiHong, PrizeClassified.ZhuangYuan);
-		PrizeClassify.put(PrizeType.ChaJinHua, PrizeClassified.ZhuangYuan);
-		PrizeClassify.put(PrizeType.SiJinPlusYiXiu, PrizeClassified.SiJinPlusYiXiu);
-		PrizeClassify.put(PrizeType.SiJinPlusErJu, PrizeClassified.SiJinPlusErJu);
-		PrizeClassify.put(PrizeType.WuZiPlusYiXiu, PrizeClassified.WuZiPlusYiXiu);
-	}
-
 	void Draw() {// 抽奖
 		Prize newPrize = new Prize();
 		System.out.println(newPrize.getPrizeType());
@@ -303,10 +282,6 @@ class Player {
 
 	public int[] getPrizeNumCount() {// PrizeNumCount的getter
 		return this.PrizeNumCount;
-	}
-
-	static PrizeClassified ClassifyPrize(PrizeType prizetype) {// PrizeClassified字典的查询接口
-		return PrizeClassify.get(prizetype);
 	}
 }
 
